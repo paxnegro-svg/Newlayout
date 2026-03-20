@@ -193,13 +193,13 @@ export default function App() {
     }
   }, [queue, currentAlert]);
 
-  const addAlert = useCallback((platform: Platform, type: EventType) => {
+  const addAlert = useCallback((platform: Platform, type: EventType, username?: string) => {
     const names = ['ZeroCool', 'AcidBurn', 'CerealKiller', 'LordNikon', 'PhantomPhreak', 'ThePlague'];
     const randomName = names[Math.floor(Math.random() * names.length)];
     
     const newAlert: Alert = {
       id: Math.random().toString(36).substr(2, 9),
-      username: randomName,
+      username: username || randomName,
       type,
       platform
     };
@@ -214,8 +214,29 @@ export default function App() {
         addAlert(e.detail.platform, e.detail.type);
       }
     };
+
+    // StreamElements Integration
+    const handleStreamElementsEvent = (obj: any) => {
+      const listener = obj.detail.listener;
+      const event = obj.detail.event;
+
+      if (!event) return;
+
+      if (listener === 'follower-latest') {
+        // Use the name from the event if available
+        addAlert('twitch', 'Follower', event.name);
+      } else if (listener === 'subscriber-latest') {
+        addAlert('twitch', 'Subscriber', event.name);
+      }
+    };
+
     window.addEventListener('trigger-alert', handleExternalAlert);
-    return () => window.removeEventListener('trigger-alert', handleExternalAlert);
+    window.addEventListener('onEventReceived', handleStreamElementsEvent);
+    
+    return () => {
+      window.removeEventListener('trigger-alert', handleExternalAlert);
+      window.removeEventListener('onEventReceived', handleStreamElementsEvent);
+    };
   }, [addAlert]);
 
   return (
