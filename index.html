@@ -21,6 +21,10 @@
             100% { transform: translateY(1000%); }
         }
         .animate-scanline { animation: scanline 6s linear infinite; }
+        .text-twitch { color: #9146FF; }
+.text-youtube { color: #FF0000; }
+.text-tiktok { color: #00f2ea; }
+.bg-chat-box { background-color: rgba(15, 23, 42, 0.4); }
     </style>
 </head>
 <body>
@@ -62,6 +66,39 @@ const AlertBox = ({ alert }) => {
         </div>
     );
 };
+        const ChatWidget = ({ messages }) => {
+    return (
+        <div className="relative w-80 h-64 flex flex-col gap-2 overflow-hidden">
+            <div className="flex items-center gap-2 mb-1 px-2">
+                <i data-lucide="terminal" className="w-3 h-3 text-system-purple opacity-50"></i>
+                <span className="text-[9px] font-bold tracking-[0.2em] opacity-50 uppercase text-white">COMMS_LOG // ENCRYPTED</span>
+            </div>
+            
+            <div className="flex flex-col-reverse gap-2 overflow-y-auto pr-2 scrollbar-hide h-full">
+                {messages.map((msg) => (
+                    <div key={msg.id} className="relative p-2 bg-chat-box border-l-2 border-white/10 backdrop-blur-sm"
+                         style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 80%, 95% 100%, 0% 100%)' }}>
+                        <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-2">
+                                <span className={`text-[10px] font-bold tracking-tight ${
+                                    msg.platform === 'twitch' ? 'text-twitch' : 
+                                    msg.platform === 'youtube' ? 'text-youtube' : 'text-tiktok'
+                                }`}>
+                                    {msg.username}
+                                </span>
+                                <div className="w-1 h-1 rounded-full bg-white/20" />
+                                <span className="text-[8px] opacity-30 uppercase text-white">{msg.platform}</span>
+                            </div>
+                            <div className="text-[11px] text-white/80 leading-tight font-mono">
+                                {msg.text}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
         const App = () => {
             const [subCount, setSubCount] = useState(150);
             const [viewerCount, setViewerCount] = useState(1240);
@@ -76,7 +113,32 @@ useEffect(() => {
             setTimeout(() => setAlert(null), 5000); // Clear after 5 seconds
         }
     };
+const [chatMessages, setChatMessages] = useState([]);
 
+useEffect(() => {
+    const handleEvents = (obj) => {
+        const listener = obj.detail.listener;
+        const event = obj.detail.event;
+
+        if (listener === 'message') {
+            const newMessage = {
+                id: Math.random().toString(36).substr(2, 9),
+                username: event.data.displayName || event.data.nick,
+                text: event.data.text,
+                platform: event.service || 'twitch', // Checks if it's twitch, youtube, or tiktok
+            };
+            
+            // Keep only the last 10 messages to save OBS resources
+            setChatMessages(prev => [newMessage, ...prev].slice(0, 10));
+        }
+    };
+
+    window.addEventListener('onEventReceived', handleEvents);
+    return () => window.removeEventListener('onEventReceived', handleEvents)<div className="absolute bottom-24 left-12 pointer-events-auto">
+    <ChatWidget messages={chatMessages} />
+</div>;
+    
+}, []);
     window.addEventListener('onEventReceived', handleStreamElementsEvent);
     return () => window.removeEventListener('onEventReceived', handleStreamElementsEvent);
 }, []);
