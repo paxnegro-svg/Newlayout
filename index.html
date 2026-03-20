@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pax Vault // HUD</title>
+    <title>Pax2K // HUD</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -16,15 +16,15 @@
         .bg-system-purple { background-color: #6B21A8; }
         .text-system-purple { color: #A855F7; }
         .border-twitch { border-color: #9146FF; }
+        .text-twitch { color: #9146FF; }
+        .text-youtube { color: #FF0000; }
+        .text-tiktok { color: #00f2ea; }
+        .bg-chat-box { background-color: rgba(15, 23, 42, 0.4); }
         @keyframes scanline {
             0% { transform: translateY(-100%); }
             100% { transform: translateY(1000%); }
         }
         .animate-scanline { animation: scanline 6s linear infinite; }
-        .text-twitch { color: #9146FF; }
-.text-youtube { color: #FF0000; }
-.text-tiktok { color: #00f2ea; }
-.bg-chat-box { background-color: rgba(15, 23, 42, 0.4); }
     </style>
 </head>
 <body>
@@ -33,14 +33,14 @@
     <script type="text/babel">
         const { useState, useEffect, useCallback } = React;
 
-        // --- COMPONENTS ---
+        // --- SUB-COMPONENTS ---
         const GoalTracker = ({ current, goal }) => {
             const percentage = Math.min((current / goal) * 100, 100);
             return (
                 <div className="relative w-64 p-3 bg-black/70 border border-white/10 backdrop-blur-md" style={{clipPath: 'polygon(0% 0%, 92% 0%, 100% 25%, 100% 100%, 8% 100%, 0% 75%)'}}>
                     <div className="flex justify-between items-end mb-2 px-1">
                         <div className="flex flex-col">
-                            <span className="text-[9px] font-bold tracking-[0.2em] opacity-50 uppercase leading-none mb-1">DATA_LINK // SUB_GOAL</span>
+                            <span className="text-[9px] font-bold tracking-[0.2em] opacity-50 uppercase leading-none mb-1 text-white">DATA_LINK // SUB_GOAL</span>
                             <span className="text-xs font-bold tracking-widest text-system-purple">ESTABLISHING...</span>
                         </div>
                         <div className="text-lg font-bold tracking-tighter leading-none text-white">{current}<span className="opacity-30 mx-1">/</span>{goal}</div>
@@ -51,133 +51,103 @@
                 </div>
             );
         };
-const AlertBox = ({ alert }) => {
-    return (
-        <div className="relative flex items-center gap-4 p-4 pr-8 bg-black/80 border-l-4 border-system-purple shadow-[0_0_15px_rgba(107,33,168,0.5)] backdrop-blur-md mb-2"
-             style={{ clipPath: 'polygon(0% 0%, 95% 0%, 100% 25%, 100% 100%, 5% 100%, 0% 75%)' }}>
-            <div className="flex flex-col skew-x-[10deg]">
-                <div className="text-[10px] font-bold tracking-widest opacity-50 uppercase">
-                    [SYSTEM_ID]: {alert.platform}_SYNC // {alert.type}
-                </div>
-                <div className="text-xl font-bold tracking-tight uppercase text-white">
-                    NEW_CONNECTION // {alert.username}
+
+        const AlertBox = ({ alert }) => (
+            <div className="relative flex items-center gap-4 p-4 pr-8 bg-black/80 border-l-4 border-system-purple shadow-[0_0_15px_rgba(107,33,168,0.5)] backdrop-blur-md mb-2"
+                 style={{ clipPath: 'polygon(0% 0%, 95% 0%, 100% 25%, 100% 100%, 5% 100%, 0% 75%)' }}>
+                <div className="flex flex-col skew-x-[10deg]">
+                    <div className="text-[10px] font-bold tracking-widest opacity-50 uppercase text-white">
+                        [SYSTEM_ID]: {alert.platform}_SYNC // {alert.type}
+                    </div>
+                    <div className="text-xl font-bold tracking-tight uppercase text-white">
+                        NEW_CONNECTION // {alert.username}
+                    </div>
                 </div>
             </div>
-        </div>
-    );
-};
-        const ChatWidget = ({ messages }) => {
-    return (
-        <div className="relative w-80 h-64 flex flex-col gap-2 overflow-hidden">
-            <div className="flex items-center gap-2 mb-1 px-2">
-                <i data-lucide="terminal" className="w-3 h-3 text-system-purple opacity-50"></i>
-                <span className="text-[9px] font-bold tracking-[0.2em] opacity-50 uppercase text-white">COMMS_LOG // ENCRYPTED</span>
-            </div>
-            
-            <div className="flex flex-col-reverse gap-2 overflow-y-auto pr-2 scrollbar-hide h-full">
-                {messages.map((msg) => (
-                    <div key={msg.id} className="relative p-2 bg-chat-box border-l-2 border-white/10 backdrop-blur-sm"
-                         style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 80%, 95% 100%, 0% 100%)' }}>
-                        <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-2">
-                                <span className={`text-[10px] font-bold tracking-tight ${
-                                    msg.platform === 'twitch' ? 'text-twitch' : 
-                                    msg.platform === 'youtube' ? 'text-youtube' : 'text-tiktok'
-                                }`}>
-                                    {msg.username}
-                                </span>
-                                <div className="w-1 h-1 rounded-full bg-white/20" />
-                                <span className="text-[8px] opacity-30 uppercase text-white">{msg.platform}</span>
-                            </div>
-                            <div className="text-[11px] text-white/80 leading-tight font-mono">
-                                {msg.text}
+        );
+
+        const ChatWidget = ({ messages }) => (
+            <div className="relative w-80 h-64 flex flex-col gap-2 overflow-hidden">
+                <div className="flex items-center gap-2 mb-1 px-2">
+                    <i data-lucide="terminal" className="w-3 h-3 text-system-purple opacity-50"></i>
+                    <span className="text-[9px] font-bold tracking-[0.2em] opacity-50 uppercase text-white">COMMS_LOG // ENCRYPTED</span>
+                </div>
+                <div className="flex flex-col-reverse gap-2 overflow-y-auto pr-2 h-full">
+                    {messages.map((msg) => (
+                        <div key={msg.id} className="relative p-2 bg-chat-box border-l-2 border-white/10 backdrop-blur-sm"
+                             style={{ clipPath: 'polygon(0% 0%, 100% 0%, 100% 80%, 95% 100%, 0% 100%)' }}>
+                            <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-[10px] font-bold tracking-tight ${
+                                        msg.platform === 'twitch' ? 'text-twitch' : 
+                                        msg.platform === 'youtube' ? 'text-youtube' : 'text-tiktok'
+                                    }`}>
+                                        {msg.username}
+                                    </span>
+                                    <div className="w-1 h-1 rounded-full bg-white/20" />
+                                    <span className="text-[8px] opacity-30 uppercase text-white">{msg.platform}</span>
+                                </div>
+                                <div className="text-[11px] text-white/80 leading-tight font-mono">{msg.text}</div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
-        </div>
-    );
-};
+        );
+
+        // --- MAIN APP ---
         const App = () => {
             const [subCount, setSubCount] = useState(150);
             const [viewerCount, setViewerCount] = useState(1240);
-useEffect(() => {
-    const handleStreamElementsEvent = (obj) => {
-        const listener = obj.detail.listener;
-        const event = obj.detail.event;
+            const [chatMessages, setChatMessages] = useState([]);
+            const [currentAlert, setCurrentAlert] = useState(null);
 
-        if (listener === 'follower-latest') {
-            // This triggers the alert when a new follower joins the Pax2K community
-            setAlert({ username: event.name, type: 'Follower', platform: 'TWITCH' });
-            setTimeout(() => setAlert(null), 5000); // Clear after 5 seconds
-        }
-    };
-    const addTestMessage = (platform) => {
-    const names = {
-        twitch: 'TwitchViewer_77',
-        youtube: 'YT_Gamer_Pro',
-        tiktok: 'TikTok_Vibes'
-    };
-    const messages = [
-        "That combo was insane!",
-        "LEROY SMITH MAINS UNITE.",
-        "System stable, HUD looks clean.",
-        "GG WP!"
-    ];
-    
-    const newMessage = {
-        id: Math.random().toString(36).substr(2, 9),
-        username: names[platform],
-        text: messages[Math.floor(Math.random() * messages.length)],
-        platform: platform
-    };
-    setChatMessages(prev => [newMessage, ...prev].slice(0, 10));
-};
-const [chatMessages, setChatMessages] = useState([]);
+            // Handle Incoming StreamEvents
+            useEffect(() => {
+                const handleEvents = (obj) => {
+                    const listener = obj.detail.listener;
+                    const event = obj.detail.event;
 
-useEffect(() => {
-    const handleEvents = (obj) => {
-        const listener = obj.detail.listener;
-        const event = obj.detail.event;
+                    if (listener === 'message') {
+                        const newMessage = {
+                            id: Math.random().toString(36).substr(2, 9),
+                            username: event.data.displayName || event.data.nick,
+                            text: event.data.text,
+                            platform: event.service || 'twitch',
+                        };
+                        setChatMessages(prev => [newMessage, ...prev].slice(0, 10));
+                    }
 
-        if (listener === 'message') {
-            const newMessage = {
-                id: Math.random().toString(36).substr(2, 9),
-                username: event.data.displayName || event.data.nick,
-                text: event.data.text,
-                platform: event.service || 'twitch', // Checks if it's twitch, youtube, or tiktok
+                    if (listener === 'follower-latest') {
+                        setCurrentAlert({ username: event.name, type: 'Follower', platform: 'TWITCH' });
+                        setTimeout(() => setCurrentAlert(null), 5000);
+                    }
+                };
+
+                window.addEventListener('onEventReceived', handleEvents);
+                return () => window.removeEventListener('onEventReceived', handleEvents);
+            }, []);
+
+            // Test function for Debug Buttons
+            const addTestMessage = (platform) => {
+                const names = { twitch: 'TwitchUser', youtube: 'YT_Gamer', tiktok: 'TT_Fan' };
+                const newMessage = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    username: names[platform],
+                    text: "System stable, HUD looks clean!",
+                    platform: platform
+                };
+                setChatMessages(prev => [newMessage, ...prev].slice(0, 10));
+                lucide.createIcons();
             };
-            
-            // Keep only the last 10 messages to save OBS resources
-            setChatMessages(prev => [newMessage, ...prev].slice(0, 10));
-        }
-    };
 
-    window.addEventListener('onEventReceived', handleEvents);
-    return () => window.removeEventListener('onEventReceived', handleEvents)<div className="absolute bottom-24 left-12 pointer-events-auto">
-    <ChatWidget messages={chatMessages} />{/* DEBUG PANEL - Click these in Chrome to test your Pax2K layout */}
-<div className="absolute bottom-8 right-8 pointer-events-auto flex flex-col gap-2 p-4 bg-black/80 border border-white/10 backdrop-blur-md opacity-50 hover:opacity-100 transition-opacity">
-    <div className="text-[10px] text-system-purple font-bold tracking-widest mb-2 border-b border-white/10 pb-1">SIMULATE_CHAT</div>
-    <div className="grid grid-cols-1 gap-2">
-        <button onClick={() => addTestMessage('twitch')} className="px-3 py-1 bg-twitch/20 border border-twitch text-[9px] text-white hover:bg-twitch/40 transition-colors uppercase">TEST_TWITCH</button>
-        <button onClick={() => addTestMessage('youtube')} className="px-3 py-1 bg-youtube/20 border border-youtube text-[9px] text-white hover:bg-youtube/40 transition-colors uppercase">TEST_YOUTUBE</button>
-        <button onClick={() => addTestMessage('tiktok')} className="px-3 py-1 bg-tiktok/20 border border-tiktok text-[9px] text-white hover:bg-tiktok/40 transition-colors uppercase">TEST_TIKTOK</button>
-    </div>
-</div>
-</div>;
-    
-}, []);
-    window.addEventListener('onEventReceived', handleStreamElementsEvent);
-    return () => window.removeEventListener('onEventReceived', handleStreamElementsEvent);
-}, []);
             return (
                 <div className="fixed inset-0 w-full h-full pointer-events-none p-12">
-                    {/* Top Left: Goal & Viewers */}
+                    {/* TOP LEFT: STATS */}
                     <div className="flex flex-col gap-4 pointer-events-auto">
                         <GoalTracker current={subCount} goal={200} />
                         <div className="bg-black/70 border border-white/10 p-2 w-32 backdrop-blur-sm" style={{clipPath: 'polygon(0% 0%, 90% 0%, 100% 30%, 100% 100%, 10% 100%, 0% 70%)'}}>
-                           <div className="text-[8px] opacity-50 uppercase mb-1">LIVE_FEED</div>
+                           <div className="text-[8px] opacity-50 uppercase mb-1 text-white">LIVE_FEED</div>
                            <div className="flex items-center gap-2 text-white text-sm font-bold">
                                <i data-lucide="users" className="w-3 h-3 text-system-purple"></i>
                                {viewerCount.toLocaleString()}
@@ -185,16 +155,32 @@ useEffect(() => {
                         </div>
                     </div>
 
-                    {/* Bottom HUD Decor */}
+                    {/* TOP RIGHT: ALERTS */}
+                    <div className="absolute top-12 right-12 flex flex-col items-end">
+                        {currentAlert && <AlertBox alert={currentAlert} />}
+                    </div>
+
+                    {/* BOTTOM LEFT: CHAT */}
+                    <div className="absolute bottom-24 left-12 pointer-events-auto">
+                        <ChatWidget messages={chatMessages} />
+                    </div>
+
+                    {/* DECOR & SCANLINE */}
                     <div className="absolute bottom-8 left-8 flex items-center gap-4 opacity-40 skew-x-[-10deg]">
                         <div className="w-1 h-12 bg-system-purple" />
                         <div className="text-white">
-                            <div className="text-[10px] font-bold tracking-widest">PAX_VAULT_V1.0.4</div>
+                            <div className="text-[10px] font-bold tracking-widest uppercase">Pax2K_STREAM_v1.0.4</div>
                             <div className="text-xs uppercase">System_Stable // Online</div>
                         </div>
                     </div>
 
-                    {/* Scanline Overlay */}
+                    {/* DEBUG PANEL */}
+                    <div className="absolute bottom-8 right-8 pointer-events-auto flex flex-col gap-2 p-4 bg-black/80 border border-white/10 opacity-30 hover:opacity-100 transition-opacity">
+                        <button onClick={() => addTestMessage('twitch')} className="px-2 py-1 bg-twitch/20 border border-twitch text-[8px] text-white">TEST_TWITCH</button>
+                        <button onClick={() => addTestMessage('youtube')} className="px-2 py-1 bg-youtube/20 border border-youtube text-[8px] text-white">TEST_YT</button>
+                        <button onClick={() => addTestMessage('tiktok')} className="px-2 py-1 bg-tiktok/20 border border-tiktok text-[8px] text-white">TEST_TT</button>
+                    </div>
+
                     <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-50 bg-[length:100%_2px,3px_100%]" />
                 </div>
             );
@@ -202,9 +188,7 @@ useEffect(() => {
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-        
-        // Initialize Icons
-        setTimeout(() => lucide.createIcons(), 100);
+        setTimeout(() => lucide.createIcons(), 500);
     </script>
 </body>
 </html>
