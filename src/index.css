@@ -27,3 +27,10 @@ body {
     animation: scanline 4s linear infinite;
   }
 }
+/* Add this to your index.css to define the purple you want */
+:root {
+  --system-purple: #6B21A8;
+}
+
+.bg-system-purple { background-color: var(--system-purple); }
+.text-system-purple { color: var(--system-purple); }

@@ -12,6 +12,14 @@ interface Alert {
   platform: Platform;
 }
 
+interface ChatMessage {
+  id: string;
+  username: string;
+  text: string;
+  platform: Platform;
+  color?: string;
+}
+
 const PLATFORM_CONFIG = {
   twitch: {
     color: 'border-twitch',
@@ -155,6 +163,53 @@ const ViewerCount: React.FC<{ count: number }> = ({ count }) => {
   );
 };
 
+const ChatWidget: React.FC<{ messages: ChatMessage[] }> = ({ messages }) => {
+  return (
+    <div className="relative w-80 h-64 flex flex-col gap-2 overflow-hidden">
+      <div className="flex items-center gap-2 mb-1 px-2">
+        <Terminal className="w-3 h-3 text-system-purple opacity-50" />
+        <span className="text-[9px] font-bold tracking-[0.2em] opacity-50 uppercase">COMMS_LOG // ENCRYPTED</span>
+      </div>
+      
+      <div className="flex flex-col-reverse gap-2 overflow-y-auto pr-2 scrollbar-hide">
+        <AnimatePresence initial={false}>
+          {messages.map((msg) => (
+            <motion.div
+              key={msg.id}
+              initial={{ opacity: 0, x: -20, height: 0 }}
+              animate={{ opacity: 1, x: 0, height: 'auto' }}
+              exit={{ opacity: 0, x: -20 }}
+              className="relative p-2 bg-slate-900/40 border-l-2 border-white/10 backdrop-blur-sm"
+              style={{
+                clipPath: 'polygon(0% 0%, 100% 0%, 100% 80%, 95% 100%, 0% 100%)',
+              }}
+            >
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <span 
+                    className="text-[10px] font-bold tracking-tight"
+                    style={{ color: msg.color || '#fff' }}
+                  >
+                    {msg.username}
+                  </span>
+                  <div className="w-1 h-1 rounded-full bg-white/20" />
+                  <span className="text-[8px] opacity-30 uppercase">{msg.platform}</span>
+                </div>
+                <div className="text-[11px] text-white/80 leading-tight">
+                  {msg.text}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* Decorative scanline for chat */}
+      <div className="absolute inset-0 pointer-events-none border border-white/5 opacity-10" />
+    </div>
+  );
+};
+
 export default function App() {
   const [queue, setQueue] = useState<Alert[]>([]);
   const [currentAlert, setCurrentAlert] = useState<Alert | null>(null);
@@ -166,6 +221,9 @@ export default function App() {
   
   // Viewer Count State
   const [viewerCount, setViewerCount] = useState(1240);
+
+  // Chat State
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 
   // Simulate real-time viewer count drift
   useEffect(() => {
@@ -207,6 +265,17 @@ export default function App() {
     setQueue(prev => [...prev, newAlert]);
   }, []);
 
+  const addChatMessage = useCallback((username: string, text: string, platform: Platform, color?: string) => {
+    const newMessage: ChatMessage = {
+      id: Math.random().toString(36).substr(2, 9),
+      username,
+      text,
+      platform,
+      color
+    };
+    setChatMessages(prev => [newMessage, ...prev].slice(0, 15));
+  }, []);
+
   // Listen for custom events (useful for OBS integration via JS)
   useEffect(() => {
     const handleExternalAlert = (e: any) => {
@@ -214,21 +283,18 @@ export default function App() {
         addAlert(e.detail.platform, e.detail.type);
       }
     };
+// StreamElements Integration
+const handleStreamElementsEvent = (obj: any) => {
+  const listener = obj.detail.listener;
+  const event = obj.detail.event;
 
-    // StreamElements Integration
-    const handleStreamElementsEvent = (obj: any) => {
-      const listener = obj.detail.listener;
-      const event = obj.detail.event;
+  if (listener === 'follower-latest') {
+    addAlert('twitch', 'Follower', event.name);
+  }
+  // ... (handles subs and chat too)
+};
 
-      if (!event) return;
-
-      if (listener === 'follower-latest') {
-        // Use the name from the event if available
-        addAlert('twitch', 'Follower', event.name);
-      } else if (listener === 'subscriber-latest') {
-        addAlert('twitch', 'Subscriber', event.name);
-      }
-    };
+window.addEventListener('onEventReceived', handleStreamElementsEvent);
 
     window.addEventListener('trigger-alert', handleExternalAlert);
     window.addEventListener('onEventReceived', handleStreamElementsEvent);
@@ -254,6 +320,11 @@ export default function App() {
             <AlertBox key={currentAlert.id} alert={currentAlert} />
           )}
         </AnimatePresence>
+      </div>
+
+      {/* Chat Widget (Bottom Left) */}
+      <div className="absolute bottom-24 left-12 pointer-events-auto">
+        <ChatWidget messages={chatMessages} />
       </div>
 
       {/* HUD Accents */}
@@ -303,6 +374,12 @@ export default function App() {
             <div className="grid grid-cols-2 gap-2">
               <button onClick={() => setViewerCount(prev => Math.max(0, prev - 50))} className="px-3 py-1 bg-white/5 border border-white/10 text-[10px] hover:bg-white/10">-50 VIEWERS</button>
               <button onClick={() => setViewerCount(prev => prev + 50)} className="px-3 py-1 bg-white/5 border border-white/10 text-[10px] hover:bg-white/10">+50 VIEWERS</button>
+            </div>
+
+            <div className="text-[10px] opacity-50 mt-4 mb-2">CHAT_SIMULATION</div>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => addChatMessage('Hacker_01', 'System breach detected!', 'twitch', '#9146FF')} className="px-3 py-1 bg-white/5 border border-white/10 text-[10px] hover:bg-white/10">MSG_01</button>
+              <button onClick={() => addChatMessage('Admin_Root', 'Initiating counter-measures...', 'youtube', '#FF0000')} className="px-3 py-1 bg-white/5 border border-white/10 text-[10px] hover:bg-white/10">MSG_02</button>
             </div>
             
             <div className="mt-2 text-[10px] opacity-30">QUEUE_SIZE: {queue.length}</div>
