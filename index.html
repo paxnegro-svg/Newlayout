@@ -65,7 +65,21 @@ const AlertBox = ({ alert }) => {
         const App = () => {
             const [subCount, setSubCount] = useState(150);
             const [viewerCount, setViewerCount] = useState(1240);
+useEffect(() => {
+    const handleStreamElementsEvent = (obj) => {
+        const listener = obj.detail.listener;
+        const event = obj.detail.event;
 
+        if (listener === 'follower-latest') {
+            // This triggers the alert when a new follower joins the Pax2K community
+            setAlert({ username: event.name, type: 'Follower', platform: 'TWITCH' });
+            setTimeout(() => setAlert(null), 5000); // Clear after 5 seconds
+        }
+    };
+
+    window.addEventListener('onEventReceived', handleStreamElementsEvent);
+    return () => window.removeEventListener('onEventReceived', handleStreamElementsEvent);
+}, []);
             return (
                 <div className="fixed inset-0 w-full h-full pointer-events-none p-12">
                     {/* Top Left: Goal & Viewers */}
