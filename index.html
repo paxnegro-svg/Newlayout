@@ -113,6 +113,27 @@ useEffect(() => {
             setTimeout(() => setAlert(null), 5000); // Clear after 5 seconds
         }
     };
+    const addTestMessage = (platform) => {
+    const names = {
+        twitch: 'TwitchViewer_77',
+        youtube: 'YT_Gamer_Pro',
+        tiktok: 'TikTok_Vibes'
+    };
+    const messages = [
+        "That combo was insane!",
+        "LEROY SMITH MAINS UNITE.",
+        "System stable, HUD looks clean.",
+        "GG WP!"
+    ];
+    
+    const newMessage = {
+        id: Math.random().toString(36).substr(2, 9),
+        username: names[platform],
+        text: messages[Math.floor(Math.random() * messages.length)],
+        platform: platform
+    };
+    setChatMessages(prev => [newMessage, ...prev].slice(0, 10));
+};
 const [chatMessages, setChatMessages] = useState([]);
 
 useEffect(() => {
@@ -135,7 +156,15 @@ useEffect(() => {
 
     window.addEventListener('onEventReceived', handleEvents);
     return () => window.removeEventListener('onEventReceived', handleEvents)<div className="absolute bottom-24 left-12 pointer-events-auto">
-    <ChatWidget messages={chatMessages} />
+    <ChatWidget messages={chatMessages} />{/* DEBUG PANEL - Click these in Chrome to test your Pax2K layout */}
+<div className="absolute bottom-8 right-8 pointer-events-auto flex flex-col gap-2 p-4 bg-black/80 border border-white/10 backdrop-blur-md opacity-50 hover:opacity-100 transition-opacity">
+    <div className="text-[10px] text-system-purple font-bold tracking-widest mb-2 border-b border-white/10 pb-1">SIMULATE_CHAT</div>
+    <div className="grid grid-cols-1 gap-2">
+        <button onClick={() => addTestMessage('twitch')} className="px-3 py-1 bg-twitch/20 border border-twitch text-[9px] text-white hover:bg-twitch/40 transition-colors uppercase">TEST_TWITCH</button>
+        <button onClick={() => addTestMessage('youtube')} className="px-3 py-1 bg-youtube/20 border border-youtube text-[9px] text-white hover:bg-youtube/40 transition-colors uppercase">TEST_YOUTUBE</button>
+        <button onClick={() => addTestMessage('tiktok')} className="px-3 py-1 bg-tiktok/20 border border-tiktok text-[9px] text-white hover:bg-tiktok/40 transition-colors uppercase">TEST_TIKTOK</button>
+    </div>
+</div>
 </div>;
     
 }, []);
