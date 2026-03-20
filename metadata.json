@@ -1,0 +1,5 @@
+{
+  "name": "Cyber-Tech OBS Overlay",
+  "description": "A minimalist, high-performance system HUD overlay for OBS gaming streams.",
+  "requestFramePermissions": []
+}

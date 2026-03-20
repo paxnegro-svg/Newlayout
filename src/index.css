@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+@theme {
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-twitch: #9146FF;
+  --color-youtube: #FF0000;
+  --color-tiktok: #00F2EA;
+  --color-system-purple: #6B21A8;
+  --color-slate-900-transparent: rgba(15, 23, 42, 0.7);
+}
+
+body {
+  background-color: transparent !important;
+  color: white;
+  overflow: hidden;
+  font-family: var(--font-mono);
+}
+
+@layer utilities {
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(1000%); }
+  }
+  .animate-scanline {
+    animation: scanline 4s linear infinite;
+  }
+}
