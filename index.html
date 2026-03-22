@@ -42,6 +42,32 @@
             .hud-container { flex-direction: row; justify-content: space-between; align-items: flex-start; }
             .chat-stack { position: absolute; bottom: 5rem; left: 2.5rem; width: 350px; }
         }
+        /* Old TV Static Effect */
+.static-overlay {
+    position: fixed; inset: 0; z-index: 999;
+    background: url('https://media.giphy.com/media/oEI9uWUPr9WUM/giphy.gif'); /* Classic Static */
+    opacity: 0; pointer-events: none; mix-blend-mode: screen;
+}
+
+/* The "Tube" Power Off Animation */
+@keyframes tv-off {
+    0% { transform: scaleY(1) scaleX(1); filter: brightness(1); }
+    40% { transform: scaleY(0.01) scaleX(1.2); filter: brightness(2); }
+    70% { transform: scaleY(0.01) scaleX(0.01); filter: brightness(5); }
+    100% { transform: scaleY(0) scaleX(0); filter: brightness(10); opacity: 0; }
+}
+
+.animate-tv-off { animation: tv-off 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
+
+.crt-flicker {
+    animation: flicker 0.1s infinite;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 3px, 3px 100%;
+}
+@keyframes flicker {
+    0% { opacity: 0.9; } 50% { opacity: 1; } 100% { opacity: 0.9; }
+}
     </style>
 </head>
 <body>
