@@ -100,7 +100,12 @@
             const [counts, setCounts] = useState({ yt: 1840, tt: 412, tw: 150 });
             const [chat, setChat] = useState([]);
             const [isEditing, setIsEditing] = useState(false);
-
+const config = {
+    start: { label: 'Online', sub: 'Initializing Stream // Starting Soon', color: '#A855F7' },
+    brb: { label: 'Paused', sub: 'System Interruption // BRB', color: '#00f2ea' },
+    end: { label: 'Offline', sub: 'Connection Severed // GG', color: '#FF0000' },
+    transition: { label: 'SIGNAL_LOST', sub: 'RECALIBRATING_OMNI_LINK', color: '#ffffff' } // ADD THIS LINE
+}[scene] || { label: 'Active', sub: 'System Live', color: '#A855F7' };
             useEffect(() => {
                 const params = new URLSearchParams(window.location.search);
                 setScene(params.get('scene') || 'hud');
