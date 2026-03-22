@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pax2K // OMNI-SYSTEM-V2.2</title>
+    <title>Pax2K // OMNI-SYSTEM-V2.3</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -88,34 +88,69 @@
             );
         };
 
-       const App = () => {
-    // 1. Get the scene immediately on load
-    const getInitialScene = () => {
-        const params = new URLSearchParams(window.location.search);
-        return params.get('scene') || 'hud';
-    };
+        const App = () => {
+            // Immediate Scene Detection
+            const getInitialScene = () => {
+                const params = new URLSearchParams(window.location.search);
+                return params.get('scene') || 'hud';
+            };
 
-    const [scene, setScene] = useState(getInitialScene());
-    const [counts, setCounts] = useState({ yt: 1840, tt: 412, tw: 150 });
-    const [chat, setChat] = useState([]);
-    const [isEditing, setIsEditing] = useState(false);
-    const [logoError, setLogoError] = useState(false);
+            const [scene, setScene] = useState(getInitialScene());
+            const [counts, setCounts] = useState({ yt: 1840, tt: 412, tw: 150 });
+            const [chat, setChat] = useState([]);
+            const [isEditing, setIsEditing] = useState(false);
+            const [logoError, setLogoError] = useState(false);
 
-    useEffect(() => {
-        // Keep the event listener logic here, but we don't need to setScene again
-        const onEvent = (obj) => {
-            const { listener, event } = obj.detail;
-            if (listener === 'message') {
-                const plat = event.service === 'google_spreadsheet' ? 'youtube' : event.service;
-                setChat(prev => [{ id: Math.random(), user: event.data.displayName, text: event.data.text, platform: plat }, ...prev].slice(0, 6));
+            useEffect(() => {
+                const onEvent = (obj) => {
+                    const { listener, event } = obj.detail;
+                    if (listener === 'message') {
+                        const plat = event.service === 'google_spreadsheet' ? 'youtube' : event.service;
+                        setChat(prev => [{ id: Math.random(), user: event.data.displayName, text: event.data.text, platform: plat }, ...prev].slice(0, 6));
+                    }
+                    if (listener === 'subscriber-latest' && event.service === 'youtube') setCounts(p => ({...p, yt: p.yt + 1}));
+                    if (listener === 'follower-latest') setCounts(p => ({...p, tw: p.tw + 1}));
+                    setTimeout(() => lucide.createIcons(), 50);
+                };
+                window.addEventListener('onEventReceived', onEvent);
+                return () => window.removeEventListener('onEventReceived', onEvent);
+            }, []);
+
+            // SCENE CONTROLLER - THIS WAS MISSING
+            if (scene !== 'hud') {
+                const config = {
+                    start: { label: 'Online', sub: 'Initializing Stream // Starting Soon', color: '#A855F7' },
+                    brb: { label: 'Paused', sub: 'System Interruption // BRB', color: '#00f2ea' },
+                    end: { label: 'Offline', sub: 'Connection Severed // GG', color: '#FF0000' },
+                    transition: { label: 'SIGNAL_LOST', sub: 'RECALIBRATING_OMNI_LINK', color: '#ffffff' }
+                }[scene] || { label: 'Active', sub: 'System Live', color: '#A855F7' };
+
+                return (
+                    <div className={`scene-bg flex flex-col items-center justify-center ${scene === 'transition' ? 'crt-flicker' : ''}`}>
+                        <div className="scanline" />
+                        {scene === 'transition' && <div className="static-overlay" />}
+                        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+                        
+                        <div className={`z-10 flex flex-col items-center text-center ${scene === 'transition' ? 'animate-tv-off' : ''}`}>
+                            {!logoError && (
+                                <img 
+                                    src="pax2k-logo.png" 
+                                    className="w-48 h-48 md:w-64 md:h-64 object-contain mb-6 animate-pulse drop-shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                                    onError={() => setLogoError(true)}
+                                />
+                            )}
+                            <div className="px-3 py-1 border border-white/10 bg-white/5 text-[10px] tracking-[0.4em] uppercase mb-4" style={{color: config.color}}>{config.label}</div>
+                            <h1 className="text-7xl md:text-9xl font-black italic tracking-tighter glitch mb-2">PAX2K</h1>
+                            <div className="h-1.5 w-64 bg-white/10 mb-6 overflow-hidden relative">
+                                <div className="h-full bg-purple-500 absolute left-0" style={{ width: '40%', animation: 'loading-slide 2s infinite ease-in-out' }} />
+                            </div>
+                            <p className="text-sm md:text-lg font-bold tracking-[0.2em] opacity-60 uppercase italic">{config.sub}</p>
+                        </div>
+                    </div>
+                );
             }
-            if (listener === 'subscriber-latest' && event.service === 'youtube') setCounts(p => ({...p, yt: p.yt + 1}));
-            if (listener === 'follower-latest') setCounts(p => ({...p, tw: p.tw + 1}));
-            setTimeout(() => lucide.createIcons(), 50);
-        };
-        window.addEventListener('onEventReceived', onEvent);
-        return () => window.removeEventListener('onEventReceived', onEvent);
-    }, []);
+
+            // DEFAULT HUD VIEW
             return (
                 <div className="hud-container pointer-events-none">
                     <div className="goal-stack flex flex-col pointer-events-auto">
