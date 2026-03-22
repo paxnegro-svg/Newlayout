@@ -87,7 +87,15 @@
                 </div>
             );
         };
-
+// Look for this specific line in your script (around line 90):
+useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const currentScene = params.get('scene') || 'hud'; // If nothing is found, show HUD
+    setScene(currentScene);
+    console.log("Current System Scene:", currentScene); // This helps you debug in OBS "Interact" mode
+    
+    // ... rest of your useEffect
+}, []);
         const App = () => {
             const [scene, setScene] = useState('hud');
             const [counts, setCounts] = useState({ yt: 1840, tt: 412, tw: 150 });
