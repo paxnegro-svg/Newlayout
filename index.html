@@ -87,15 +87,7 @@
                 </div>
             );
         };
-// Look for this specific line in your script (around line 90):
-useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const currentScene = params.get('scene') || 'hud'; // If nothing is found, show HUD
-    setScene(currentScene);
-    console.log("Current System Scene:", currentScene); // This helps you debug in OBS "Interact" mode
-    
-    // ... rest of your useEffect
-}, []);
+
         const App = () => {
             const [scene, setScene] = useState('hud');
             const [counts, setCounts] = useState({ yt: 1840, tt: 412, tw: 150 });
@@ -181,4 +173,21 @@ useEffect(() => {
                                 <div className="text-[8px] opacity-50 uppercase tracking-widest mb-1">Override_Console</div>
                                 <input type="number" value={counts.yt} onChange={e => setCounts({...counts, yt: parseInt(e.target.value)})} className="bg-white/5 text-white p-1 text-xs outline-none border border-white/10" />
                                 <input type="number" value={counts.tt} onChange={e => setCounts({...counts, tt: parseInt(e.target.value)})} className="bg-white/5 text-white p-1 text-xs outline-none border border-white/10" />
-                                <input type="number" value={counts.tw} onChange={e => setCounts({...counts, tw: parseInt(e.target.value)})} className="bg-white/5 text-white p-1 text-xs outline-none border border-white/1
+                                <input type="number" value={counts.tw} onChange={e => setCounts({...counts, tw: parseInt(e.target.value)})} className="bg-white/5 text-white p-1 text-xs outline-none border border-white/10" />
+                                <button onClick={() => setIsEditing(false)} className="bg-purple-600 text-[9px] font-bold p-1 hover:bg-purple-500 uppercase">Sync_System</button>
+                            </div>
+                        )}
+                        <button onClick={() => setIsEditing(!isEditing)} className="w-8 h-8 bg-black/80 border border-white/10 rounded-full flex items-center justify-center hover:border-purple-500 transition-all">
+                            <i data-lucide="terminal" className="w-4 h-4 text-white" />
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+        setTimeout(() => lucide.createIcons(), 500);
+    </script>
+</body>
+</html>
