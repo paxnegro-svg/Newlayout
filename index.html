@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pax2K // OMNI-SYSTEM-V2.6</title>
+    <title>Pax2K // OMNI-SYSTEM-V2.8</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,73 +14,19 @@
         :root { --pax-purple: #A855F7; --pax-dark: #0a0a0c; }
         body { background: transparent; margin: 0; overflow: hidden; font-family: 'JetBrains Mono', monospace; color: white; }
 
-        /* Scenery Background (Dark/Eye-Friendly) */
         .scene-bg { background: var(--pax-dark); height: 100vh; width: 100vw; position: relative; }
-        .scanline {
-            width: 100%; height: 2px; background: rgba(168, 85, 247, 0.1);
-            position: absolute; top: 0; animation: scan 8s linear infinite; z-index: 5;
-        }
+        .scanline { width: 100%; height: 2px; background: rgba(168, 85, 247, 0.1); position: absolute; top: 0; animation: scan 8s linear infinite; z-index: 5; }
         @keyframes scan { from { top: 0%; } to { top: 100%; } }
-        @keyframes loading-slide {
-            0% { left: -100%; width: 30%; }
-            50% { left: 30%; width: 60%; }
-            100% { left: 100%; width: 30%; }
-        }
-
-        /* Glitch & Glow Effects */
-        .glitch { text-shadow: 2px 0 #FF0000, -2px 0 #00f2ea; }
-        .goal-glow { box-shadow: 0 0 15px var(--pax-purple); }
-
-        /* Responsive Layout Logic */
-        .hud-container { display: flex; height: 100vh; width: 100vw; padding: 2.5rem; transition: all 0.5s ease; }
-        @media (max-aspect-ratio: 1/1) { /* Vertical Clone */
-            .hud-container { flex-direction: column; align-items: center; justify-content: space-between; }
-            .goal-stack { align-items: center; }
-            .chat-stack { width: 90%; margin-bottom: 5rem; }
-        }
-        @media (min-aspect-ratio: 1/1) { /* Horizontal Main */
-            .hud-container { flex-direction: row; justify-content: space-between; align-items: flex-start; }
-            .chat-stack { position: absolute; bottom: 5rem; left: 2.5rem; width: 350px; }
-        }
-
-        /* Milestone Alert Effects */
-        @keyframes alert-pulse {
-            0% { transform: scale(0.9); opacity: 0; }
-            50% { transform: scale(1.05); opacity: 1; border-color: #fff; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .alert-active { animation: alert-pulse 0.4s ease-out forwards; }
         
+        .glitch { text-shadow: 2px 0 #FF0000, -2px 0 #00f2ea; }
         .glitch-text { animation: text-glitch 2s infinite; }
-        @keyframes text-glitch {
-            0% { text-shadow: 1px 0 #ff0000; }
-            50% { text-shadow: -1px 0 #00f2ea; }
-            100% { text-shadow: 1px 0 #ff0000; }
-        }
+        @keyframes text-glitch { 0%, 100% { text-shadow: 1px 0 #ff0000; } 50% { text-shadow: -1px 0 #00f2ea; } }
 
-        /* NEW: Milestone Full Screen Effects */
-        .milestone-alert {
-            position: fixed; inset: 0; z-index: 999;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex; flex-direction: column; items-center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.5s ease-in-out;
-        }
+        .milestone-alert { position: fixed; inset: 0; z-index: 999; background: rgba(0, 0, 0, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.5s ease-in-out; }
         .milestone-active { opacity: 1; pointer-events: auto; }
-
-        .matrix-grid {
-            position: absolute; inset: 0;
-            background-image: 
-                linear-gradient(to right, rgba(168, 85, 247, 0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(168, 85, 247, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
-            animation: move-grid 20s linear infinite; opacity: 0.3;
-        }
+        
+        .matrix-grid { position: absolute; inset: 0; background-image: linear-gradient(to right, rgba(168, 85, 247, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(168, 85, 247, 0.1) 1px, transparent 1px); background-size: 40px 40px; animation: move-grid 20s linear infinite; opacity: 0.3; }
         @keyframes move-grid { from { background-position: 0 0; } to { background-position: 0 100px; } }
-
-        @keyframes glitch-logo {
-            0%, 100% { opacity: 0; } 50% { opacity: 1; filter: grayscale(1) brightness(2); }
-        }
-        .glitch-logo { animation: glitch-logo 0.1s infinite; }
     </style>
 </head>
 <body>
@@ -92,222 +38,98 @@
         const GoalBar = ({ label, current, goal, color, icon }) => {
             const pct = Math.min((current / goal) * 100, 100).toFixed(1);
             const isMet = current >= goal;
-            
             return (
-                <div className={`w-80 mb-4 p-3 bg-black/90 border-l-4 transition-all duration-500 ${isMet ? 'goal-glow border-white ring-1 ring-purple-500/50' : 'border-white/10'}`} style={{borderLeftColor: isMet ? '#fff' : color}}>
-                    <div className="flex justify-between items-end text-[10px] font-extrabold mb-1.5 tracking-tighter uppercase">
-                        <div className="flex items-center gap-2">
-                            <i data-lucide={icon} className="w-3.5 h-3.5" style={{color: isMet ? '#fff' : color}}></i>
-                            <span className={isMet ? 'text-white' : 'opacity-70'}>{label}</span>
-                        </div>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-[8px] opacity-40 italic">System_Progress:</span>
-                            <span className={`text-xs ${isMet ? 'glitch-text text-white' : ''}`} style={{color: isMet ? '#fff' : color}}>
-                                {pct}%
-                            </span>
-                        </div>
+                <div className="flex items-center gap-3 min-w-[160px]">
+                    <div className="flex items-center gap-1.5 min-w-[40px]">
+                        <i data-lucide={icon} className="w-3 h-3" style={{color: isMet ? '#fff' : color}}></i>
+                        <span className="text-[9px] font-black opacity-60 uppercase">{label}</span>
                     </div>
-                    
-                    <div className="h-1.5 bg-white/5 overflow-hidden relative">
-                        {/* The actual progress fill */}
-                        <div 
-                            className="h-full transition-all duration-1000 ease-out relative z-10" 
-                            style={{width: `${pct}%`, backgroundColor: isMet ? '#fff' : color}} 
-                        />
-                        {/* Subtle background pulse for the bar */}
-                        <div className="absolute inset-0 opacity-10 bg-white animate-pulse" />
-                    </div>
-                    
-                    <div className="flex justify-between mt-1 text-[9px] font-bold opacity-40">
-                        <span>DATA_SYNC</span>
-                        <span>{current.toLocaleString()} / {goal.toLocaleString()}</span>
+                    <div className="flex-1 flex flex-col gap-0.5">
+                        <div className="h-1 w-20 bg-white/5 overflow-hidden relative border border-white/5">
+                            <div className="h-full transition-all duration-1000 ease-out" style={{width: `${pct}%`, backgroundColor: isMet ? '#fff' : color}} />
+                        </div>
+                        <div className="flex justify-between w-20 text-[7px] font-bold opacity-40">
+                            <span>{pct}%</span>
+                            <span>{current}/{goal}</span>
+                        </div>
                     </div>
                 </div>
             );
         };
 
         const App = () => {
-            const getInitialScene = () => {
-                const params = new URLSearchParams(window.location.search);
-                return params.get('scene') || 'hud';
-            };
-
-            const [scene, setScene] = useState(getInitialScene());
-            
-            // --- Pax2K: UPDATE THESE NUMBERS TO YOUR REAL COUNTS BEFORE SAVING ---
-            const [counts, setCounts] = useState({ 
-                yt: 1840, // Update this to your current YT sub count
-                tt: 412,  // Update this to your TikTok followers
-                tw: 150   // Update this to your Twitch followers
-            });
-            
-            const [goals] = useState({ yt: 2500, tt: 500, tw: 200 }); // Your targets
-
+            const [counts, setCounts] = useState({ yt: 1840, tt: 412, tw: 150 });
+            const [goals] = useState({ yt: 2500, tt: 500, tw: 200 });
             const [chat, setChat] = useState([]);
             const [latestAlert, setLatestAlert] = useState(null);
             const [milestoneAlert, setMilestoneAlert] = useState(null);
             const [isEditing, setIsEditing] = useState(false);
-            const [logoError, setLogoError] = useState(false);
 
             useEffect(() => {
-                const triggerAlert = (type, user) => {
-                    setLatestAlert({ type, user });
-                    setTimeout(() => setLatestAlert(null), 5000); // Alert lasts 5 seconds
-                };
-
-                const triggerMilestone = (platform) => {
-                    setMilestoneAlert({ platform });
-                    setTimeout(() => setMilestoneAlert(null), 10000); // Milestone alert lasts 10 seconds
-                };
-
                 const onEvent = (obj) => {
                     const { listener, event } = obj.detail;
-                    
-                    // Chat Detection
                     if (listener === 'message') {
-                        const plat = event.service === 'google_spreadsheet' ? 'youtube' : event.service;
-                        setChat(prev => [{ id: Math.random(), user: event.data.displayName, text: event.data.text, platform: plat }, ...prev].slice(0, 6));
+                        setChat(prev => [{ id: Math.random(), user: event.data.displayName, text: event.data.text, platform: event.service }, ...prev].slice(0, 5));
                     }
-
-                    // YouTube Sub Detection
-                    if (listener === 'subscriber-latest' && event.service === 'youtube') {
-                        const newTotal = event.data.amount || event.data.count;
-                        setCounts(p => {
-                            const updated = {...p, yt: newTotal || p.yt + 1};
-                            if (updated.yt >= goals.yt && p.yt < goals.yt) triggerMilestone('YOUTUBE');
-                            return updated;
-                        });
-                        triggerAlert('NEW_SUBSCRIBER', event.data.name);
+                    if (listener === 'subscriber-latest' || listener === 'follower-latest') {
+                        setLatestAlert({ type: listener.toUpperCase(), user: event.data.name });
+                        setTimeout(() => setLatestAlert(null), 5000);
                     }
-
-                    // Twitch Follow Detection
-                    if (listener === 'follower-latest' && event.service === 'twitch') {
-                        const newTotal = event.data.amount || event.data.count;
-                        setCounts(p => {
-                            const updated = {...p, tw: newTotal || p.tw + 1};
-                            if (updated.tw >= goals.tw && p.tw < goals.tw) triggerMilestone('TWITCH');
-                            return updated;
-                        });
-                        triggerAlert('NEW_FOLLOWER', event.data.name);
-                    }
-
                     setTimeout(() => lucide.createIcons(), 50);
                 };
-
                 window.addEventListener('onEventReceived', onEvent);
                 return () => window.removeEventListener('onEventReceived', onEvent);
-            }, [goals]);
-
-            // Scene Controller (Starting Soon, BRB, etc)
-            if (scene !== 'hud') {
-                const config = {
-                    start: { label: 'Online', sub: 'Initializing Stream // Starting Soon', color: '#A855F7' },
-                    brb: { label: 'Paused', sub: 'System Interruption // BRB', color: '#00f2ea' },
-                    end: { label: 'Offline', sub: 'Connection Severed // GG', color: '#FF0000' }
-                }[scene] || { label: 'Active', sub: 'System Live', color: '#A855F7' };
-
-                return (
-                    <div className="scene-bg flex flex-col items-center justify-center">
-                        <div className="scanline" />
-                        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-                        
-                        <div className="z-10 flex flex-col items-center text-center">
-                            {!logoError && (
-                                <img 
-                                    src="pax2k-logo.png" 
-                                    alt="Pax2K Logo" 
-                                    className="w-48 h-48 md:w-64 md:h-64 object-contain mb-6 animate-pulse drop-shadow-[0_0_15px_rgba(168,85,247,0.4)]"
-                                    onError={() => setLogoError(true)}
-                                />
-                            )}
-                            <div className="px-3 py-1 border border-white/10 bg-white/5 text-[10px] tracking-[0.4em] uppercase mb-4" style={{color: config.color}}>{config.label}</div>
-                            <h1 className="text-7xl md:text-9xl font-black italic tracking-tighter glitch mb-2">PAX2K</h1>
-                            <div className="h-1.5 w-64 bg-white/10 mb-6 overflow-hidden relative">
-                                <div className="h-full bg-purple-500 absolute left-0" style={{ width: '40%', animation: 'loading-slide 2s infinite ease-in-out' }} />
-                            </div>
-                            <p className="text-sm md:text-lg font-bold tracking-[0.2em] opacity-60 uppercase italic">{config.sub}</p>
-                        </div>
-                    </div>
-                );
-            }
+            }, []);
 
             return (
-                <div className="hud-container pointer-events-none">
-                    {/* NEW: Full Screen Milestone Alert (Hidden by Default) */}
+                <div className="relative h-screen w-screen overflow-hidden">
+                    {/* MILESTONE OVERLAY */}
                     <div className={`milestone-alert ${milestoneAlert ? 'milestone-active' : ''}`}>
                         <div className="matrix-grid"></div>
-                        <div className="z-10 text-center">
-                            <div className="glitch-logo mb-6 text-white text-9xl">PAX2K</div>
-                            <div className="px-6 py-2 border border-white bg-black/80 text-xl font-black text-white italic tracking-tighter uppercase glitch-text mb-4">
-                                DATA_LINK_STABILIZED // GOAL_REACHED
-                            </div>
-                            <div className="text-6xl font-black italic tracking-tighter text-purple-400 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)] mb-2">
-                                {milestoneAlert ? milestoneAlert.platform : ''}_OBJECTIVE_COMPLETE
-                            </div>
-                            <div className="text-xl font-bold tracking-widest text-white/50 uppercase italic">Connection_Severed // Hype_Achieved</div>
-                        </div>
+                        <h1 className="text-9xl font-black italic glitch mb-4">PAX2K</h1>
+                        <div className="text-4xl font-bold text-purple-400 uppercase tracking-tighter">Goal_Reached</div>
                     </div>
 
-                    {/* TOP LEFT: GOAL STACK */}
-                    <div className="goal-stack flex flex-col pointer-events-auto">
-                        <GoalBar label="YouTube" current={counts.yt} goal={goals.yt} color="#FF0000" icon="youtube" />
-                        <GoalBar label="TikTok" current={counts.tt} goal={goals.tt} color="#00f2ea" icon="music" />
-                        <GoalBar label="Twitch" current={counts.tw} goal={goals.tw} color="#9146FF" icon="twitch" />
-                    </div>
-
-                    {/* TOP RIGHT: LIVE ALERT MODULE */}
+                    {/* LIVE ALERT (Top Right) */}
                     {latestAlert && (
-                        <div className="fixed top-10 right-10 alert-active pointer-events-auto">
-                            <div className="bg-black/90 border-t-2 border-white p-4 flex flex-col items-end backdrop-blur-xl shadow-[0_0_20px_rgba(168,85,247,0.3)]">
-                                <div className="text-[10px] tracking-[0.3em] text-purple-400 font-bold mb-1 glitch-text italic">SYSTEM_ALERT // {latestAlert.type}</div>
-                                <div className="text-2xl font-black italic tracking-tighter text-white uppercase">{latestAlert.user}</div>
-                                <div className="h-0.5 w-full bg-white/20 mt-2">
-                                    <div className="h-full bg-white animate-[loading-slide_5s_linear_forwards]" />
-                                }
-                            </div>
+                        <div className="fixed top-10 right-10 bg-black/90 border-t-2 border-white p-4 animate-bounce">
+                            <div className="text-[10px] text-purple-400 font-bold italic">SYSTEM_ALERT</div>
+                            <div className="text-2xl font-black italic">{latestAlert.user}</div>
                         </div>
                     )}
-                    
-                    {/* BOTTOM LEFT: CHAT STACK */}
-                    <div className="chat-stack flex flex-col-reverse gap-2 pointer-events-auto">
+
+                    {/* CHAT (Bottom Left, above bar) */}
+                    <div className="fixed bottom-16 left-8 flex flex-col-reverse gap-2 w-[300px] pointer-events-none">
                         {chat.map(m => (
-                            <div key={m.id} className="p-2 bg-black/60 border-l-2 border-purple-500 backdrop-blur-md">
-                                <div className="flex items-center gap-2 text-[10px] font-bold">
-                                    <i data-lucide={m.platform === 'youtube' ? 'youtube' : m.platform === 'tiktok' ? 'music' : 'twitch'} 
-                                       className={`w-3 h-3 ${m.platform === 'youtube' ? 'text-red-500' : m.platform === 'tiktok' ? 'text-cyan-400' : 'text-purple-400'}`} />
-                                    {m.user}
+                            <div key={m.id} className="p-2 bg-black/80 border-l-2 border-purple-500 backdrop-blur-md">
+                                <div className="text-[9px] font-black uppercase flex items-center gap-2">
+                                    <i data-lucide="message-square" className="w-3 h-3 text-purple-400" /> {m.user}
                                 </div>
-                                <div className="text-[12px] opacity-90">{m.text}</div>
+                                <div className="text-[11px] font-bold opacity-90">{m.text}</div>
                             </div>
                         ))}
                     </div>
 
-                    {/* SETTINGS TOGGLE / MANUAL OVERRIDE */}
-                    <div className="fixed bottom-10 right-10 pointer-events-auto">
-                        {isEditing && (
-                            <div className="bg-black/95 border border-purple-500 p-4 mb-2 flex flex-col gap-2 w-48 shadow-2xl pointer-events-auto">
-                                <div className="text-[10px] text-purple-400 font-bold uppercase mb-2 italic">Manual_Override</div>
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[9px] opacity-50">YT_Subs</span>
-                                        <input type="number" value={counts.yt} onChange={e => setCounts({...counts, yt: parseInt(e.target.value) || 0})} className="bg-white/5 text-white p-1 text-xs w-24 border border-white/10" />
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[9px] opacity-50">TT_Follow</span>
-                                        <input type="number" value={counts.tt} onChange={e => setCounts({...counts, tt: parseInt(e.target.value) || 0})} className="bg-white/5 text-white p-1 text-xs w-24 border border-white/10" />
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[9px] opacity-50">TW_Follow</span>
-                                        <input type="number" value={counts.tw} onChange={e => setCounts({...counts, tw: parseInt(e.target.value) || 0})} className="bg-white/5 text-white p-1 text-xs w-24 border border-white/10" />
-                                    </div>
-                                </div>
-                                <button onClick={() => setIsEditing(false)} className="mt-2 bg-purple-600 text-[10px] font-bold p-2 hover:bg-purple-500 uppercase italic">Update_System</button>
-                            </div>
-                        )}
-                        <button onClick={() => setIsEditing(!isEditing)} className="w-8 h-8 bg-black/80 border border-white/10 rounded-full flex items-center justify-center hover:border-purple-500 transition-all">
-                            <i data-lucide="terminal" className="w-4 h-4 text-white" />
+                    {/* THE SYSTEM BAR (Bottom) */}
+                    <div className="fixed bottom-0 left-0 w-full h-12 bg-black/95 border-t border-purple-500/30 flex items-center justify-between px-8 z-50 pointer-events-auto">
+                        <div className="text-[10px] font-black italic glitch-text tracking-widest">PAX2K // SYSTEM_ACTIVE</div>
+                        <div className="flex gap-10">
+                            <GoalBar label="YT" current={counts.yt} goal={goals.yt} color="#FF0000" icon="youtube" />
+                            <GoalBar label="TT" current={counts.tt} goal={goals.tt} color="#00f2ea" icon="music" />
+                            <GoalBar label="TW" current={counts.tw} goal={goals.tw} color="#9146FF" icon="twitch" />
+                        </div>
+                        <button onClick={() => setIsEditing(!isEditing)} className="opacity-40 hover:opacity-100">
+                            <i data-lucide="terminal" className="w-4 h-4" />
                         </button>
                     </div>
+
+                    {/* OVERRIDE PANEL */}
+                    {isEditing && (
+                        <div className="fixed bottom-16 right-8 bg-black border border-purple-500 p-4 w-48 pointer-events-auto">
+                            <input type="number" value={counts.yt} onChange={e => setCounts({...counts, yt: e.target.value})} className="bg-white/10 w-full p-1 mb-2 text-xs" />
+                            <button onClick={() => setIsEditing(false)} className="w-full bg-purple-600 text-[10px] font-bold p-1">CLOSE</button>
+                        </div>
+                    )}
                 </div>
             );
         };
