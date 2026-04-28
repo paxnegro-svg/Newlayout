@@ -14,7 +14,7 @@
         :root { --pax-purple: #A855F7; --pax-dark: #0a0a0c; }
         body { background: transparent; margin: 0; overflow: hidden; font-family: 'JetBrains Mono', monospace; color: white; }
 
-        .scene-bg { background: var(--pax-dark); height: 100vh; width: 100vw; position: relative; }
+        .scene-bg { background: var(--pax-dark); height: 100vh; width: 100vw; position: relative; display: flex; align-items: center; justify-content: center; }
         .scanline { width: 100%; height: 2px; background: rgba(168, 85, 247, 0.1); position: absolute; top: 0; animation: scan 8s linear infinite; z-index: 5; }
         @keyframes scan { from { top: 0%; } to { top: 100%; } }
         
@@ -25,8 +25,7 @@
         .milestone-alert { position: fixed; inset: 0; z-index: 999; background: rgba(0, 0, 0, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.5s ease-in-out; }
         .milestone-active { opacity: 1; pointer-events: auto; }
         
-        .matrix-grid { position: absolute; inset: 0; background-image: linear-gradient(to right, rgba(168, 85, 247, 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(168, 85, 247, 0.1) 1px, transparent 1px); background-size: 40px 40px; animation: move-grid 20s linear infinite; opacity: 0.3; }
-        @keyframes move-grid { from { background-position: 0 0; } to { background-position: 0 100px; } }
+        @keyframes loading-slide { 0% { left: -100%; width: 30%; } 50% { left: 30%; width: 60%; } 100% { left: 100%; width: 30%; } }
     </style>
 </head>
 <body>
@@ -58,14 +57,23 @@
         };
 
         const App = () => {
+            const [scene, setScene] = useState('hud');
             const [counts, setCounts] = useState({ yt: 1840, tt: 412, tw: 150 });
             const [goals] = useState({ yt: 2500, tt: 500, tw: 200 });
             const [chat, setChat] = useState([]);
             const [latestAlert, setLatestAlert] = useState(null);
-            const [milestoneAlert, setMilestoneAlert] = useState(null);
             const [isEditing, setIsEditing] = useState(false);
+            const [logoError, setLogoError] = useState(false);
+
+            // FIX: Use the RAW GitHub URL so the image displays
+            const RAW_LOGO_URL = "https://raw.githubusercontent.com/paxnegro-svg/Newlayout/main/pax2k-logo.png";
 
             useEffect(() => {
+                // Determine scene from URL parameters
+                const params = new URLSearchParams(window.location.search);
+                const sceneParam = params.get('scene');
+                if (sceneParam) setScene(sceneParam);
+
                 const onEvent = (obj) => {
                     const { listener, event } = obj.detail;
                     if (listener === 'message') {
@@ -81,62 +89,9 @@
                 return () => window.removeEventListener('onEventReceived', onEvent);
             }, []);
 
-            return (
-                <div className="relative h-screen w-screen overflow-hidden">
-                    {/* MILESTONE OVERLAY */}
-                    <div className={`milestone-alert ${milestoneAlert ? 'milestone-active' : ''}`}>
-                        <div className="matrix-grid"></div>
-                        <h1 className="text-9xl font-black italic glitch mb-4">PAX2K</h1>
-                        <div className="text-4xl font-bold text-purple-400 uppercase tracking-tighter">Goal_Reached</div>
-                    </div>
-
-                    {/* LIVE ALERT (Top Right) */}
-                    {latestAlert && (
-                        <div className="fixed top-10 right-10 bg-black/90 border-t-2 border-white p-4 animate-bounce">
-                            <div className="text-[10px] text-purple-400 font-bold italic">SYSTEM_ALERT</div>
-                            <div className="text-2xl font-black italic">{latestAlert.user}</div>
-                        </div>
-                    )}
-
-                    {/* CHAT (Bottom Left, above bar) */}
-                    <div className="fixed bottom-16 left-8 flex flex-col-reverse gap-2 w-[300px] pointer-events-none">
-                        {chat.map(m => (
-                            <div key={m.id} className="p-2 bg-black/80 border-l-2 border-purple-500 backdrop-blur-md">
-                                <div className="text-[9px] font-black uppercase flex items-center gap-2">
-                                    <i data-lucide="message-square" className="w-3 h-3 text-purple-400" /> {m.user}
-                                </div>
-                                <div className="text-[11px] font-bold opacity-90">{m.text}</div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* THE SYSTEM BAR (Bottom) */}
-                    <div className="fixed bottom-0 left-0 w-full h-12 bg-black/95 border-t border-purple-500/30 flex items-center justify-between px-8 z-50 pointer-events-auto">
-                        <div className="text-[10px] font-black italic glitch-text tracking-widest">PAX2K // SYSTEM_ACTIVE</div>
-                        <div className="flex gap-10">
-                            <GoalBar label="YT" current={counts.yt} goal={goals.yt} color="#FF0000" icon="youtube" />
-                            <GoalBar label="TT" current={counts.tt} goal={goals.tt} color="#00f2ea" icon="music" />
-                            <GoalBar label="TW" current={counts.tw} goal={goals.tw} color="#9146FF" icon="twitch" />
-                        </div>
-                        <button onClick={() => setIsEditing(!isEditing)} className="opacity-40 hover:opacity-100">
-                            <i data-lucide="terminal" className="w-4 h-4" />
-                        </button>
-                    </div>
-
-                    {/* OVERRIDE PANEL */}
-                    {isEditing && (
-                        <div className="fixed bottom-16 right-8 bg-black border border-purple-500 p-4 w-48 pointer-events-auto">
-                            <input type="number" value={counts.yt} onChange={e => setCounts({...counts, yt: e.target.value})} className="bg-white/10 w-full p-1 mb-2 text-xs" />
-                            <button onClick={() => setIsEditing(false)} className="w-full bg-purple-600 text-[10px] font-bold p-1">CLOSE</button>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-        setTimeout(() => lucide.createIcons(), 500);
-    </script>
-</body>
-</html>
+            // START, BRB, END SCENE LOGIC
+            if (scene !== 'hud') {
+                const config = {
+                    start: { label: 'Online', sub: 'Initializing Stream // Starting Soon', color: '#A855F7' },
+                    brb: { label: 'Paused', sub: 'System Interruption // BRB', color: '#00f2ea' },
+                    end: { label: 'Offline', sub: 'Connection Severed // GG', color: '#FF0
